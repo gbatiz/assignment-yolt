@@ -3,7 +3,7 @@ resource "aws_emr_cluster" "cluster" {
   release_label = "emr-6.6.0"
   applications  = ["Spark"]
 
-  log_uri = "s3://${aws_s3_bucket.bucket.id}/emr_logs"
+  log_uri = "s3://${aws_s3_bucket.bucket.id}/emr_logs/"
   depends_on = [
     aws_s3_bucket.bucket
   ]

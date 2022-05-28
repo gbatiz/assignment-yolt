@@ -8,13 +8,6 @@ resource "aws_s3_bucket_acl" "bucket_acl" {
   bucket = aws_s3_bucket.bucket.bucket
 }
 
-# resource "aws_s3_bucket_object" "raw_data" {
-#   bucket     = aws_s3_bucket.bucket.id
-#   key        = "data/raw/sample.snappy.parquet"
-#   source     = "../data/sample.snappy.parquet"
-#   # depends_on = ["aws_s3_bucket.bucket"]
-# }
-
 resource "aws_s3_object" "raw_data" {
   for_each = fileset("../data/", "**")
   bucket   = aws_s3_bucket.bucket.id
@@ -23,8 +16,8 @@ resource "aws_s3_object" "raw_data" {
 }
 
 resource "aws_s3_object" "scripts" {
-  bucket = aws_s3_bucket.bucket.id
-  key    = "scripts/health_violations.py"
-  source = "../scripts/health_violations.py"
-  # depends_on = ["aws_s3_bucket.bucket"]
+  for_each = fileset("../scripts/", "**")
+  bucket   = aws_s3_bucket.bucket.id
+  key      = "../scripts/${each.value}"
+  source   = "../scripts/${each.value}"
 }
