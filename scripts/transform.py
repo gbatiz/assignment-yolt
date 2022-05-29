@@ -152,12 +152,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--source_parquet",
-        help="The URI for you CSV restaurant data, like an S3 bucket location.",
+        help="The URI of the input data.",
         required=True
     )
     parser.add_argument(
         "--target_parquet",
-        help="The URI where output is saved, like an S3 bucket location.",
+        help="The URI of the write target for the transformed data .",
         required=True
     )
     args = parser.parse_args()
