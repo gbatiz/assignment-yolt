@@ -54,7 +54,7 @@ I decided to create a table showing the proportion of new users acquired via the
 
 ### Transformation steps
 
-**This is a high-level walkthrough, for setails see [`scripts/transform.py`](scripts/transform.py).**
+**This is a high-level walkthrough, for details see [`scripts/transform.py`](scripts/transform.py).**
 
 1. Select subset of data
 
