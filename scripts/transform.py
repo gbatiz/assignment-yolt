@@ -10,6 +10,16 @@ import pyspark.sql.functions as fn
 APP_NAME = "Marketing: Organic rolling share"
 
 
+# TODO: Write pipeline test for raw data
+def test_raw(spark, df):
+    pass
+
+
+# TODO: Write pipeline test for staging data
+def test_staging(spark, df):
+    pass
+
+
 def generate_year_week_filler_df(
     startdate: "datetime.date",
     enddate: "datetime.date",
@@ -154,12 +164,14 @@ if __name__ == "__main__":
 
     with SparkSession.builder.appName(APP_NAME).getOrCreate() as spark:
 
-        df = spark.read.parquet(args.source_parquet)
-        df.cache()
+        raw = spark.read.parquet(args.source_parquet)
+        raw.cache()
+
+        test_raw(spark, raw)
 
         filler = generate_year_week_filler_df(
             *(
-                df.select(
+                raw.select(
                     fn.min('start_date'),
                     fn.max('start_date'),
                     fn.collect_set('country')
@@ -168,12 +180,13 @@ if __name__ == "__main__":
             )
         )
 
-        (
-            transform(df, filler)
-            .repartition(1)
-            .write.parquet(
-                path=args.target_parquet,
-                mode="overwrite",
-                compression="snappy",
-            )
+        staging = transform(raw, filler).repartition(1)
+        staging.cache()
+
+        test_staging(spark, staging)
+
+        staging.write.parquet(
+            path=args.target_parquet,
+            mode="overwrite",
+            compression="snappy",
         )
