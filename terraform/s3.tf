@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "bucket" {
-  bucket        = "gbatiz-yolt-assignment"
+  bucket        = var.bucket_name
   force_destroy = true
 }
 
