@@ -21,18 +21,18 @@ def generate_year_week_filler_df(
 
     The generated dataframe is like:
 
-    +-------+---------+------+
-    |country|year_week|period|
-    +-------+---------+------+
-    |     GB|  2020_39|202039|
-    |     IT|  2020_39|202039|
-    |     FR|  2020_39|202039|
-    |     GB|  2020_40|202040|
-    |     IT|  2020_40|202040|
-    |     FR|  2020_40|202040|
-    |     GB|  2020_41|202041|
-    |     IT|  2020_41|202041|
-    |     FR|  2020_41|202041|
+    +-------+---------+
+    |country|year_week|
+    +-------+---------+
+    |     GB|  2020_39|
+    |     IT|  2020_39|
+    |     FR|  2020_39|
+    |     GB|  2020_40|
+    |     IT|  2020_40|
+    |     FR|  2020_40|
+    |     GB|  2020_41|
+    |     IT|  2020_41|
+    |     FR|  2020_41|
     ...
 
     Parameters
@@ -60,10 +60,7 @@ def generate_year_week_filler_df(
 
     filler = (
         pd.DataFrame(product(weeks, countries))
-        .assign(
-            year_week=lambda df: df[0].dt.strftime("%Y_%W"),
-            period=lambda df: df[0].dt.strftime("%Y%W").astype(int)
-        )
+        .assign(year_week=lambda df: df[0].dt.strftime("%Y_%W"))
         .rename(columns={1:'country'})
         .drop(columns=[0])
         .pipe(spark.createDataFrame)
@@ -73,8 +70,8 @@ def generate_year_week_filler_df(
 
 
 def transform(
-    df:  "pyspark.sql.dataframe.DataFrame",
-    filler:  "pyspark.sql.dataframe.DataFrame"
+    df: "pyspark.sql.dataframe.DataFrame",
+    filler: "pyspark.sql.dataframe.DataFrame"
 ) -> "pyspark.sql.dataframe.DataFrame":
     """
     Calculates the share of organic channel in user acquisitions per country,
@@ -111,16 +108,16 @@ def transform(
                 (fn.col("name") == "Organic").alias("is_organic"),
                 "value",
                 "year_week",
-                year_week_to_int(fn.col("year_week")).alias("period"),
                 "country",
             ]
         )
-        .groupby(["year_week", "period", "country"]).pivot("is_organic").sum("value")
+        .groupby(["year_week", "country"]).pivot("is_organic").sum("value")
         .join(
             other=fn.broadcast(filler),
-            on=['year_week', 'period', 'country'],
+            on=['year_week', 'country'],
             how='outer'
         )
+        .withColumn("period", year_week_to_int(fn.col("year_week")))
         .fillna(0)
         .withColumn("sum_nonorganic_P4W", fn.sum("false").over(window_four_weeks))
         .withColumn("sum_organic_P4W", fn.sum("true").over(window_four_weeks))
@@ -130,7 +127,7 @@ def transform(
                 fn.split("year_week", "_").getItem(1).cast("int").alias("week"),
                 "country",
                 (
-                        fn.col("sum_organic_P4W")
+                       fn.col("sum_organic_P4W")
                     / (fn.col("sum_organic_P4W") + fn.col("sum_nonorganic_P4W"))
                 ).alias("share_organic_p4w"),
             ]
