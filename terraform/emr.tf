@@ -25,6 +25,11 @@ resource "aws_emr_cluster" "cluster" {
     instance_type  = "m5.xlarge"
   }
 
+  bootstrap_action {
+    path = "s3://${aws_s3_bucket.bucket.id}/scripts/bootstrap.sh"
+    name = "install_pandas"
+  }
+
   service_role = aws_iam_role.iam_emr_service_role.arn
 }
 
