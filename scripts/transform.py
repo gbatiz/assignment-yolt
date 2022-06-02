@@ -108,7 +108,7 @@ def transform(
     )
 
     year_week_to_int = fn.udf(
-        lambda year_week: int(year_week.replace("-", "")), IntegerType()
+        lambda year_week: int(year_week.replace("_", "")), IntegerType()
     )
 
     rolling_share_of_organic_acquisition_per_country = (df
